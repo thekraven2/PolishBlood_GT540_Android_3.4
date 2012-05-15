@@ -750,7 +750,7 @@ static void __init msm_register_device(struct platform_device *pdev, void *data)
 			  __func__, ret);
 }
 
-void __init msm_fb_register_device(char *name, void *data)
+/*void __init msm_fb_register_device(char *name, void *data)
 {
 	if (!strncmp(name, "mdp", 3))
 		msm_register_device(&msm_mdp_device, data);
@@ -766,7 +766,7 @@ void __init msm_fb_register_device(char *name, void *data)
 		msm_register_device(&msm_lcdc_device, data);
 	else
 		printk(KERN_ERR "%s: unknown device! %s\n", __func__, name);
-}
+} */
 
 static struct platform_device msm_camera_device = {
 	.name	= "msm_camera",
