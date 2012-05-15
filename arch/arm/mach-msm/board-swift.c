@@ -102,6 +102,7 @@ static void __init msm7x2x_map_io(void)
 
 
 #ifdef CONFIG_CACHE_L2X0
+	{
 		/* 7x27 has 256KB L2 cache:
 			64Kb/Way and 4-Way Associativity;
 			R/W latency: 3 cycles;
