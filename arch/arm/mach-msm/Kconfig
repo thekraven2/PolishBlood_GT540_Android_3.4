@@ -14,6 +14,16 @@ config ARCH_MSM7X00A
 	select GPIO_MSM_V1
 	select MSM_PROC_COMM
 
+config ARCH_MSM7X27
+	bool "MSM7x27"
+	select ARCH_MSM_ARM11 if MSM_SOC_REV_NONE
+	select ARCH_MSM_CORTEX_A5 if MSM_SOC_REV_A
+	select MSM_VIC
+	select CPU_V6 if MSM_SOC_REV_NONE
+	select CPU_V7 if MSM_SOC_REV_A
+	select MSM_REMOTE_SPINLOCK_SWP if MSM_SOC_REV_NONE
+	select MSM_GPIOMUX if !MSM_SOC_REV_A
+
 config ARCH_MSM7X30
 	bool "MSM7x30"
 	select MACH_MSM7X30_SURF # if !
@@ -78,6 +88,14 @@ config  MSM_VIC
 	bool
 
 menu "Qualcomm MSM Board Type"
+
+config MACH_MSM7X27_SWIFT
+	depends on ARCH_MSM7X27
+	depends on !MSM_STACKED_MEMORY
+	default y
+	bool "MSM7x27 SWIFT"
+	help
+  	  Support for the Qualcomm MSM7x27 SWIFT LG GT540 (Optimus).
 
 config MACH_HALIBUT
 	depends on ARCH_MSM
