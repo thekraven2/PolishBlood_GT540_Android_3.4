@@ -34,7 +34,7 @@
 #endif
 
 #include <mach/vreg.h>
-#include <mach/mpp.h>
+//#include <mach/mpp.h> // Disabled for now
 #include <mach/board.h>
 #include <mach/msm_iomap.h>
 
@@ -84,9 +84,6 @@ static void __init msm7x2x_init(void)
 {
 	if (socinfo_init() < 0)
 		BUG();
-		}
-	}
-
 	platform_add_devices(devices, ARRAY_SIZE(devices));
 }
 
