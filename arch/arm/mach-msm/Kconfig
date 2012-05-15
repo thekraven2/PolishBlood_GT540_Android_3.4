@@ -89,7 +89,7 @@ config  MSM_VIC
 
 menu "Qualcomm MSM Board Type"
 
-config MACH_MSM7X27_SWIFT
+config MACH_SWIFT
 	depends on ARCH_MSM7X27
 	depends on !MSM_STACKED_MEMORY
 	default y
