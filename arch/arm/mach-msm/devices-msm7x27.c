@@ -750,7 +750,7 @@ static void __init msm_register_device(struct platform_device *pdev, void *data)
 			  __func__, ret);
 }
 
-/*void __init msm_fb_register_device(char *name, void *data)
+void __init msm_fb_register_device(char *name, void *data)
 {
 	if (!strncmp(name, "mdp", 3))
 		msm_register_device(&msm_mdp_device, data);
@@ -766,7 +766,7 @@ static void __init msm_register_device(struct platform_device *pdev, void *data)
 		msm_register_device(&msm_lcdc_device, data);
 	else
 		printk(KERN_ERR "%s: unknown device! %s\n", __func__, name);
-} */
+}
 
 static struct platform_device msm_camera_device = {
 	.name	= "msm_camera",
@@ -827,13 +827,6 @@ struct clk_lookup msm_clocks_7x27[] = {
 	CLK_PCOM("vdc_clk",	VDC_CLK,	NULL, OFF | CLK_MIN),
 	CLK_PCOM("vfe_clk",	VFE_CLK,	NULL, OFF),
 	CLK_PCOM("vfe_mdc_clk",	VFE_MDC_CLK,	NULL, OFF),
-
-	CLK_VOTER("ebi1_acpu_clk",	EBI_ACPU_CLK,	"ebi1_clk", NULL, 0),
-	CLK_VOTER("ebi1_kgsl_clk",	EBI_KGSL_CLK,	"ebi1_clk", NULL, 0),
-	CLK_VOTER("ebi1_lcdc_clk",	EBI_LCDC_CLK,	"ebi1_clk", NULL, 0),
-	CLK_VOTER("ebi1_mddi_clk",	EBI_MDDI_CLK,	"ebi1_clk", NULL, 0),
-	CLK_VOTER("ebi1_usb_clk",	EBI_USB_CLK,	"ebi1_clk", NULL, 0),
-	CLK_VOTER("ebi1_vfe_clk",	EBI_VFE_CLK,	"ebi1_clk", NULL, 0),
 };
 
 unsigned msm_num_clocks_7x27 = ARRAY_SIZE(msm_clocks_7x27);
