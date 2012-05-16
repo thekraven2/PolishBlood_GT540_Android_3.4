@@ -25,7 +25,6 @@
 #ifdef CONFIG_MACH_SEMC_ZEUS
 #include <linux/leds.h>
 #endif /* CONFIG_MACH_SEMC_ZEUS */
-#include <linux/leds-pmic8058.h>
 
 /* platform device data structures */
 struct msm_acpu_clock_platform_data {
@@ -73,16 +72,6 @@ struct msm_camera_csi_params {
 	uint8_t dpcm_scheme;
 };
 
-#ifdef CONFIG_SENSORS_MT9T013
-struct msm_camera_legacy_device_platform_data {
-	int sensor_reset;
-	int sensor_pwd;
-	int vcm_pwd;
-	void (*config_gpio_on) (void);
-	void (*config_gpio_off)(void);
-};
-#endif
-
 #define MSM_CAMERA_FLASH_NONE 0
 #define MSM_CAMERA_FLASH_LED  1
 
@@ -106,35 +95,6 @@ struct msm_camera_sensor_pwr {
 #ifdef CONFIG_MACH_SEMC_ZEUS
 #define MSM_CAMERA_FLASH_SRC_LED  (0x00000001<<2)
 #endif /* CONFIG_MACH_SEMC_ZEUS */
-
-struct msm_camera_sensor_flash_pmic {
-	uint8_t num_of_src;
-	uint32_t low_current;
-	uint32_t high_current;
-	enum pmic8058_leds led_src_1;
-	enum pmic8058_leds led_src_2;
-	int (*pmic_set_current)(enum pmic8058_leds id, unsigned mA);
-};
-
-struct msm_camera_sensor_flash_pwm {
-	uint32_t freq;
-	uint32_t max_load;
-	uint32_t low_load;
-	uint32_t high_load;
-	uint32_t channel;
-};
-
-struct msm_camera_sensor_flash_src {
-	int flash_sr_type;
-
-	union {
-		struct msm_camera_sensor_flash_pmic pmic_src;
-		struct msm_camera_sensor_flash_pwm pwm_src;
-#ifdef CONFIG_MACH_SEMC_ZEUS
-		struct gpio_led_platform_data *gpio_led_src;
-#endif /* CONFIG_MACH_SEMC_ZEUS */
-	} _fsrc;
-};
 
 struct msm_camera_sensor_flash_data {
 	int flash_type;
@@ -252,10 +212,6 @@ struct lcdc_platform_data {
 	int (*lcdc_power_save)(int);
 };
 
-struct tvenc_platform_data {
-	int (*pm_vid_en)(int on);
-};
-
 struct mddi_platform_data {
 	int (*mddi_power_save)(int on);
 	int (*mddi_sel_clk)(u32 *clk_rate);
@@ -272,15 +228,6 @@ struct msm_fb_platform_data {
 	int (*allow_set_offset)(void);
 };
 
-struct msm_hdmi_platform_data {
-	int irq;
-	int (*cable_detect)(int insert);
-	int (*comm_power)(int on, int show);
-	int (*enable_5v)(int on);
-	int (*core_power)(int on);
-	int (*cec_power)(int on);
-	int (*init_irq)(void);
-};
 
 struct msm_i2c_platform_data {
 	int clk_freq;
@@ -295,17 +242,6 @@ struct msm_i2c_platform_data {
 	const char *pclk;
 	int src_clk_rate;
 	void (*msm_i2c_config_gpio)(int iface, int config_type);
-};
-
-enum msm_ssbi_controller_type {
-	MSM_SBI_CTRL_SSBI = 0,
-	MSM_SBI_CTRL_SSBI2,
-	MSM_SBI_CTRL_PMIC_ARBITER,
-};
-
-struct msm_ssbi_platform_data {
-	const char *rsl_id;
-	enum msm_ssbi_controller_type controller_type;
 };
 
 /* common init routines for use by arch/arm/mach-msm/board-*.c */
