@@ -781,9 +781,3 @@ void __init msm_camera_register_device(void *res, uint32_t num,
 
 	msm_register_device(&msm_camera_device, data);
 }
-
-struct clk_lookup msm_clocks_7x27[] = {
-CLK_PCOM("uart_clk", UART3_CLK, "msm_serial.2", 0),
-};
-
-unsigned msm_num_clocks_7x27 = ARRAY_SIZE(msm_clocks_7x27);
