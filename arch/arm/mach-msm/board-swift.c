@@ -42,7 +42,7 @@
 #include <linux/mtd/partitions.h>
 
 #include "devices.h"
-#include "socinfo.h"
+#include "mach/socinfo.h"
 #include "clock.h"
 
 static struct resource smc91x_resources[] = {
@@ -82,8 +82,6 @@ static void __init msm7x2x_init_irq(void)
 
 static void __init msm7x2x_init(void)
 {
-	if (socinfo_init() < 0)
-		BUG();
 	platform_add_devices(devices, ARRAY_SIZE(devices));
 }
 
@@ -95,7 +93,7 @@ static void __init msm7x2x_map_io(void)
 	 * are plans to restructure the code which will eliminate the
 	 * need for socinfo.
 	 */
-		msm_clock_init(msm_clocks_7x27, msm_num_clocks_7x27);
+	//	msm_clock_init(msm_clocks_7x27, msm_num_clocks_7x27); // Giving errors, disabled
 
 
 #ifdef CONFIG_CACHE_L2X0
