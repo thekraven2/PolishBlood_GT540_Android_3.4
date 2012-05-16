@@ -26,15 +26,14 @@
 #include <mach/hardware.h>
 #include <asm/mach-types.h>
 #include <asm/mach/arch.h>
+
 #include <asm/mach/map.h>
 #include <asm/mach/flash.h>
 #include <asm/setup.h>
 #ifdef CONFIG_CACHE_L2X0
 #include <asm/hardware/cache-l2x0.h>
 #endif
-
 #include <mach/vreg.h>
-//#include <mach/mpp.h> // Disabled for now
 #include <mach/board.h>
 #include <mach/msm_iomap.h>
 
@@ -96,17 +95,15 @@ static void __init msm7x2x_map_io(void)
 
 
 #ifdef CONFIG_CACHE_L2X0
-	{
 		/* 7x27 has 256KB L2 cache:
 			64Kb/Way and 4-Way Associativity;
 			R/W latency: 3 cycles;
 			evmon/parity/share disabled. */
-		l2x0_init(MSM_L2CC_BASE, 0x00068012, 0xfe000000);
-	}
+	l2x0_init(MSM_L2CC_BASE, 0x00068012, 0xfe000000);
 #endif
 }
 
-MACHINE_START(MSM7X27_SWIFT, "QCT MSM7x27 SWIFT")
+MACHINE_START(MSM7X27_SWIFT, "LGE GT540 SWIFT")
 	.atag_offset	= 0x100,
 	.map_io		= msm7x2x_map_io,
 	.init_irq	= msm7x2x_init_irq,
