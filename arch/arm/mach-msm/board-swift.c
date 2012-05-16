@@ -73,17 +73,17 @@ static struct platform_device *devices[] __initdata = {
 
 extern struct sys_timer msm_timer;
 
-static void __init msm7x2x_init_irq(void)
+static void __init swift_init_irq(void)
 {
 	msm_init_irq();
 }
 
-static void __init msm7x2x_init(void)
+static void __init swift_init(void)
 {
 	platform_add_devices(devices, ARRAY_SIZE(devices));
 }
 
-static void __init msm7x2x_map_io(void)
+static void __init swift_map_io(void)
 {
 	msm_map_common_io();
 	/* Technically dependent on the SoC but using machine_is
@@ -105,8 +105,8 @@ static void __init msm7x2x_map_io(void)
 
 MACHINE_START(MSM7X27_SWIFT, "LGE GT540 SWIFT")
 	.atag_offset	= 0x100,
-	.map_io		= msm7x2x_map_io,
-	.init_irq	= msm7x2x_init_irq,
-	.init_machine	= msm7x2x_init,
+	.map_io		= swift_map_io,
+	.init_irq	= swift_init_irq,
+	.init_machine	= swift_init,
 	.timer		= &msm_timer,
 MACHINE_END
