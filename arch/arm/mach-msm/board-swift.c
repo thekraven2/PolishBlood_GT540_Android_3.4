@@ -92,7 +92,7 @@ static void __init msm7x2x_map_io(void)
 	 * are plans to restructure the code which will eliminate the
 	 * need for socinfo.
 	 */
-	//	msm_clock_init(msm_clocks_7x27, msm_num_clocks_7x27); // Giving errors, disabled
+	msm_clock_init(msm_clocks_7x27, msm_num_clocks_7x27);
 
 
 #ifdef CONFIG_CACHE_L2X0
