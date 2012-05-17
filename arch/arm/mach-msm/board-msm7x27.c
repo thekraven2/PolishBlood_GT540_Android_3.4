@@ -41,7 +41,6 @@
 #include <linux/mtd/partitions.h>
 
 #include "devices.h"
-#include "socinfo.h"
 #include "clock.h"
 
 static struct resource smc91x_resources[] = {
