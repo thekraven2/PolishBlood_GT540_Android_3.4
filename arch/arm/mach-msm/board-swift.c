@@ -42,7 +42,7 @@
 
 #include "devices.h"
 #include "clock.h"
-
+void __init msm_clock_init(struct clk_lookup *clock_tbl, unsigned num_clocks);
 static struct resource smc91x_resources[] = {
 	[0] = {
 		.start	= 0x9C004300,

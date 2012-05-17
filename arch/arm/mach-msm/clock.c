@@ -1,7 +1,7 @@
 /* arch/arm/mach-msm/clock.c
  *
  * Copyright (C) 2007 Google, Inc.
- * Copyright (c) 2007-2011, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2007-2010, Code Aurora Forum. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -15,141 +15,109 @@
  */
 
 #include <linux/kernel.h>
+#include <linux/list.h>
 #include <linux/err.h>
 #include <linux/spinlock.h>
+#include <linux/pm_qos.h>
+#include <linux/mutex.h>
+#include <linux/clk.h>
 #include <linux/string.h>
 #include <linux/module.h>
-#include <linux/clk.h>
 #include <linux/clkdev.h>
 
 #include "clock.h"
+
+static DEFINE_MUTEX(clocks_mutex);
+static DEFINE_SPINLOCK(clocks_lock);
+static LIST_HEAD(clocks);
 
 /*
  * Standard clock functions defined in include/linux/clk.h
  */
 int clk_enable(struct clk *clk)
 {
-	int ret = 0;
 	unsigned long flags;
-	struct clk *parent;
-
-	if (!clk)
-		return 0;
-
-	spin_lock_irqsave(&clk->lock, flags);
-	if (clk->count == 0) {
-		parent = clk_get_parent(clk);
-		ret = clk_enable(parent);
-		if (ret)
-			goto out;
-
-		if (clk->ops->enable)
-			ret = clk->ops->enable(clk);
-		if (ret) {
-			clk_disable(parent);
-			goto out;
-		}
-	}
+	spin_lock_irqsave(&clocks_lock, flags);
 	clk->count++;
-out:
-	spin_unlock_irqrestore(&clk->lock, flags);
-
-	return ret;
+	if (clk->count == 1)
+		clk->ops->enable(clk->id);
+	spin_unlock_irqrestore(&clocks_lock, flags);
+	return 0;
 }
 EXPORT_SYMBOL(clk_enable);
 
 void clk_disable(struct clk *clk)
 {
 	unsigned long flags;
-	struct clk *parent;
-
-	if (!clk)
-		return;
-
-	spin_lock_irqsave(&clk->lock, flags);
-	if (WARN_ON(clk->count == 0))
-		goto out;
-	if (clk->count == 1) {
-		if (clk->ops->disable)
-			clk->ops->disable(clk);
-		parent = clk_get_parent(clk);
-		clk_disable(parent);
-	}
+	spin_lock_irqsave(&clocks_lock, flags);
+	BUG_ON(clk->count == 0);
 	clk->count--;
-out:
-	spin_unlock_irqrestore(&clk->lock, flags);
+	if (clk->count == 0)
+		clk->ops->disable(clk->id);
+	spin_unlock_irqrestore(&clocks_lock, flags);
 }
 EXPORT_SYMBOL(clk_disable);
 
 int clk_reset(struct clk *clk, enum clk_reset_action action)
 {
-	if (!clk->ops->reset)
-		return -ENOSYS;
-
-	return clk->ops->reset(clk, action);
+	return clk->ops->reset(clk->remote_id, action);
 }
 EXPORT_SYMBOL(clk_reset);
 
 unsigned long clk_get_rate(struct clk *clk)
 {
-	if (!clk->ops->get_rate)
-		return 0;
-
-	return clk->ops->get_rate(clk);
+	return clk->ops->get_rate(clk->id);
 }
 EXPORT_SYMBOL(clk_get_rate);
 
 int clk_set_rate(struct clk *clk, unsigned long rate)
 {
-	if (!clk->ops->set_rate)
-		return -ENOSYS;
+	int ret;
+	if (clk->flags & CLKFLAG_MAX) {
+		ret = clk->ops->set_max_rate(clk->id, rate);
+		if (ret)
+			return ret;
+	}
+	if (clk->flags & CLKFLAG_MIN) {
+		ret = clk->ops->set_min_rate(clk->id, rate);
+		if (ret)
+			return ret;
+	}
 
-	return clk->ops->set_rate(clk, rate);
+	if (clk->flags & CLKFLAG_MAX || clk->flags & CLKFLAG_MIN)
+		return ret;
+
+	return clk->ops->set_rate(clk->id, rate);
 }
 EXPORT_SYMBOL(clk_set_rate);
 
 long clk_round_rate(struct clk *clk, unsigned long rate)
 {
-	if (!clk->ops->round_rate)
-		return -ENOSYS;
-
-	return clk->ops->round_rate(clk, rate);
+	return clk->ops->round_rate(clk->id, rate);
 }
 EXPORT_SYMBOL(clk_round_rate);
 
 int clk_set_min_rate(struct clk *clk, unsigned long rate)
 {
-	if (!clk->ops->set_min_rate)
-		return -ENOSYS;
-
-	return clk->ops->set_min_rate(clk, rate);
+	return clk->ops->set_min_rate(clk->id, rate);
 }
 EXPORT_SYMBOL(clk_set_min_rate);
 
 int clk_set_max_rate(struct clk *clk, unsigned long rate)
 {
-	if (!clk->ops->set_max_rate)
-		return -ENOSYS;
-
-	return clk->ops->set_max_rate(clk, rate);
+	return clk->ops->set_max_rate(clk->id, rate);
 }
 EXPORT_SYMBOL(clk_set_max_rate);
 
 int clk_set_parent(struct clk *clk, struct clk *parent)
 {
-	if (!clk->ops->set_parent)
-		return 0;
-
-	return clk->ops->set_parent(clk, parent);
+	return -ENOSYS;
 }
 EXPORT_SYMBOL(clk_set_parent);
 
 struct clk *clk_get_parent(struct clk *clk)
 {
-	if (!clk->ops->get_parent)
-		return NULL;
-
-	return clk->ops->get_parent(clk);
+	return ERR_PTR(-ENOSYS);
 }
 EXPORT_SYMBOL(clk_get_parent);
 
@@ -157,57 +125,60 @@ int clk_set_flags(struct clk *clk, unsigned long flags)
 {
 	if (clk == NULL || IS_ERR(clk))
 		return -EINVAL;
-	if (!clk->ops->set_flags)
-		return -ENOSYS;
-
-	return clk->ops->set_flags(clk, flags);
+	return clk->ops->set_flags(clk->id, flags);
 }
 EXPORT_SYMBOL(clk_set_flags);
 
-static struct clk_lookup *msm_clocks;
-static unsigned msm_num_clocks;
+/* EBI1 is the only shared clock that several clients want to vote on as of
+ * this commit. If this changes in the future, then it might be better to
+ * make clk_min_rate handle the voting or make ebi1_clk_set_min_rate more
+ * generic to support different clocks.
+ */
+static struct clk *ebi1_clk;
 
-void __init msm_clock_init(struct clk_lookup *clock_tbl, size_t num_clocks)
+void __init msm_clock_init(struct clk_lookup *clock_tbl, unsigned num_clocks)
 {
 	unsigned n;
 
+	mutex_lock(&clocks_mutex);
 	for (n = 0; n < num_clocks; n++) {
-		struct clk *clk = clock_tbl[n].clk;
-		struct clk *parent = clk_get_parent(clk);
-		clk_set_parent(clk, parent);
+		clkdev_add(&clock_tbl[n]);
+		list_add_tail(&clock_tbl[n].clk->list, &clocks);
 	}
+	mutex_unlock(&clocks_mutex);
 
-	clkdev_add_table(clock_tbl, num_clocks);
-	msm_clocks = clock_tbl;
-	msm_num_clocks = num_clocks;
+	ebi1_clk = clk_get(NULL, "ebi1_clk");
+	BUG_ON(ebi1_clk == NULL);
+
 }
 
-/*
- * The bootloader and/or AMSS may have left various clocks enabled.
- * Disable any clocks that have not been explicitly enabled by a
- * clk_enable() call and don't have the CLKFLAG_SKIP_AUTO_OFF flag.
+/* The bootloader and/or AMSS may have left various clocks enabled.
+ * Disable any clocks that belong to us (CLKFLAG_AUTO_OFF) but have
+ * not been explicitly enabled by a clk_enable() call.
  */
 static int __init clock_late_init(void)
 {
-	unsigned n;
 	unsigned long flags;
+	struct clk *clk;
 	unsigned count = 0;
 
-	clock_debug_init(msm_clocks, msm_num_clocks);
-	for (n = 0; n < msm_num_clocks; n++) {
-		struct clk *clk = msm_clocks[n].clk;
-
+	clock_debug_init();
+	mutex_lock(&clocks_mutex);
+	list_for_each_entry(clk, &clocks, list) {
 		clock_debug_add(clk);
-		if (!(clk->flags & CLKFLAG_SKIP_AUTO_OFF)) {
-			spin_lock_irqsave(&clk->lock, flags);
-			if (!clk->count && clk->ops->auto_off) {
+		if (clk->flags & CLKFLAG_AUTO_OFF) {
+			spin_lock_irqsave(&clocks_lock, flags);
+			if (!clk->count) {
 				count++;
-				clk->ops->auto_off(clk);
+				clk->ops->auto_off(clk->id);
 			}
-			spin_unlock_irqrestore(&clk->lock, flags);
+			spin_unlock_irqrestore(&clocks_lock, flags);
 		}
 	}
+	mutex_unlock(&clocks_mutex);
 	pr_info("clock_late_init() disabled %d unused clocks\n", count);
 	return 0;
 }
+
 late_initcall(clock_late_init);
+
