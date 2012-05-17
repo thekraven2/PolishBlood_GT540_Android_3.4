@@ -24,7 +24,7 @@
 #include <mach/board.h>
 
 #include "devices.h"
-#include "gpio_hw.h"
+
 
 #include <asm/mach/flash.h>
 
