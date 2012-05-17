@@ -207,7 +207,7 @@ struct platform_device msm_device_i2c = {
 	.num_resources	= ARRAY_SIZE(resources_i2c),
 	.resource	= resources_i2c,
 };
-
+/*
 #define MSM_HSUSB_PHYS        0xA0800000
 static struct resource resources_hsusb_otg[] = {
 	{
@@ -349,7 +349,7 @@ struct platform_device usb_gadget_fserial_device = {
 	},
 };
 #endif
-
+*/
 #define MSM_NAND_PHYS		0xA0A00000
 static struct resource resources_nand[] = {
 	[0] = {
@@ -365,7 +365,7 @@ static struct resource resources_nand[] = {
 		.flags  = IORESOURCE_MEM,
 	},
 };
-
+/*
 static struct resource resources_otg[] = {
 	{
 		.start	= MSM_HSUSB_PHYS,
@@ -388,7 +388,7 @@ struct platform_device msm_device_otg = {
 		.coherent_dma_mask	= 0xffffffffULL,
 	},
 };
-
+*/
 struct flash_platform_data msm_nand_data = {
 	.parts		= NULL,
 	.nr_parts	= 0,
@@ -428,6 +428,7 @@ struct platform_device msm_device_dmov = {
 #define MSM_SDC2_BASE         0xA0500000
 #define MSM_SDC3_BASE         0xA0600000
 #define MSM_SDC4_BASE         0xA0700000
+/*
 static struct resource resources_sdc1[] = {
 	{
 		.start	= MSM_SDC1_BASE,
@@ -558,7 +559,7 @@ int __init msm_add_sdcc(unsigned int controller, struct mmc_platform_data *plat)
 	pdev->dev.platform_data = plat;
 	return platform_device_register(pdev);
 }
-
+*/
 #if defined(CONFIG_FB_MSM_MDP40)
 #define MDP_BASE          0xA3F00000
 #define PMDH_BASE         0xAD600000
