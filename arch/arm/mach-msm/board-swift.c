@@ -26,7 +26,7 @@
 #include <mach/hardware.h>
 #include <asm/mach-types.h>
 #include <asm/mach/arch.h>
-
+#include <linux/memblock.h>
 #include <asm/mach/map.h>
 #include <asm/mach/flash.h>
 #include <asm/setup.h>
@@ -42,6 +42,8 @@
 
 #include "devices.h"
 #include "clock.h"
+/*from ioremap from 35*/
+#define MSM_L2CC_BASE         IOMEM(0xFA006000)
 void __init msm_clock_init(struct clk_lookup *clock_tbl, unsigned num_clocks);
 static struct resource smc91x_resources[] = {
 	[0] = {
@@ -75,17 +77,17 @@ extern struct sys_timer msm_timer;
 
 static void __init swift_init_irq(void)
 {
-	msm_init_irq();
+  	msm_init_irq();
 }
 
 static void __init swift_init(void)
 {
-	platform_add_devices(devices, ARRAY_SIZE(devices));
+  	platform_add_devices(devices, ARRAY_SIZE(devices));
 }
 
 static void __init swift_map_io(void)
 {
-	msm_map_common_io();
+  	msm_map_common_io();
 	/* Technically dependent on the SoC but using machine_is
 	 * macros since socinfo is not available this early and there
 	 * are plans to restructure the code which will eliminate the
@@ -99,8 +101,26 @@ static void __init swift_map_io(void)
 			64Kb/Way and 4-Way Associativity;
 			R/W latency: 3 cycles;
 			evmon/parity/share disabled. */
-	l2x0_init(MSM_L2CC_BASE, 0x00068012, 0xfe000000);
+		l2x0_init(MSM_L2CC_BASE, 0x00068012, 0xfe000000);
 #endif
+}
+
+static void __init swift_fixup(struct tag *tags, char **cmdline,
+			       struct meminfo *mi)
+{
+	mi->nr_banks = 1;
+	mi->bank[0].start = PHYS_OFFSET;
+	mi->bank[0].size = (101*1024*1024);
+}
+
+
+static void __init swift_reserve(void)
+{
+	memblock_remove(0x0, SZ_2M);
+}
+static void __init swift_init_early(void)
+{
+	arch_ioremap_caller = __msm_ioremap_caller;
 }
 
 MACHINE_START(MSM7X27_SWIFT, "LGE GT540 SWIFT")
@@ -109,4 +129,7 @@ MACHINE_START(MSM7X27_SWIFT, "LGE GT540 SWIFT")
 	.init_irq	= swift_init_irq,
 	.init_machine	= swift_init,
 	.timer		= &msm_timer,
+        .fixup          = swift_fixup,
+	.reserve        = swift_reserve,
+        .init_early     = swift_init_early, 
 MACHINE_END

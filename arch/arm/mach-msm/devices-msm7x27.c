@@ -48,6 +48,7 @@ static struct resource resources_uart1[] = {
 		.start	= MSM_UART1_PHYS,
 		.end	= MSM_UART1_PHYS + MSM_UART1_SIZE - 1,
 		.flags	= IORESOURCE_MEM,
+				.name  = "uart_resource"
 	},
 };
 
@@ -61,6 +62,7 @@ static struct resource resources_uart2[] = {
 		.start	= MSM_UART2_PHYS,
 		.end	= MSM_UART2_PHYS + MSM_UART2_SIZE - 1,
 		.flags	= IORESOURCE_MEM,
+				.name  = "uart_resource"
 	},
 };
 
@@ -74,7 +76,7 @@ static struct resource resources_uart3[] = {
 		.start	= MSM_UART3_PHYS,
 		.end	= MSM_UART3_PHYS + MSM_UART3_SIZE - 1,
 		.flags	= IORESOURCE_MEM,
-	},
+				.name  = "uart_resource"},
 };
 
 struct platform_device msm_device_uart1 = {
@@ -787,7 +789,7 @@ void __init msm_camera_register_device(void *res, uint32_t num,
 struct clk_lookup msm_clocks_7x27[] = {
 	CLK_PCOM("adm_clk",	ADM_CLK,	NULL, 0),
 	CLK_PCOM("adsp_clk",	ADSP_CLK,	NULL, 0),
-	CLK_PCOM("ebi1_clk",	EBI1_CLK,	NULL, CLK_MIN),
+	CLK_PCOM("ebi1_clk",	EBI1_CLK,	NULL, 0),
 	CLK_PCOM("ebi2_clk",	EBI2_CLK,	NULL, 0),
 	CLK_PCOM("ecodec_clk",	ECODEC_CLK,	NULL, 0),
 	CLK_PCOM("gp_clk",	GP_CLK,		NULL, 0),
@@ -820,7 +822,7 @@ struct clk_lookup msm_clocks_7x27[] = {
 	CLK_PCOM("uart_clk",	UART1_CLK,	"msm_serial.0", OFF),
 	CLK_PCOM("uart_clk",	UART2_CLK,	"msm_serial.1", 0),
 	CLK_PCOM("uart_clk",	UART3_CLK,	"msm_serial.2", 0),
-	CLK_PCOM("uartdm_clk",	UART1DM_CLK,	"msm_serial_hs.0", OFF),
+	CLK_PCOM("uartdm_clk",	UART1DM_CLK,	"msm_serial_hs.0",0),
 	CLK_PCOM("uartdm_clk",	UART2DM_CLK,	"msm_serial_hs.1", 0),
 	CLK_PCOM("usb_hs_clk",	USB_HS_CLK,	NULL, OFF),
 	CLK_PCOM("usb_hs_pclk",	USB_HS_P_CLK,	NULL, OFF),
