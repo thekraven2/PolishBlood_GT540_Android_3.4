@@ -1,4 +1,4 @@
 # MSM7x27
-   zreladdr-$(CONFIG_ARCH_MSM7X27) := 0x00208000
-params_phys-$(CONFIG_ARCH_MSM7X27) := 0x00200100
-initrd_phys-$(CONFIG_ARCH_MSM7X27) := 0x0A000000
+zreladdr-y := 0x00208000
+params_phys-y := 0x00200100
+initrd_phys-y := 0x0A000000
